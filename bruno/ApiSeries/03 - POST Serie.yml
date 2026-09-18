@@ -1,0 +1,25 @@
+info:
+  name: 03 - POST Serie
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/series"
+  body:
+    type: json
+    data: |-
+      {
+        "titulo": "Breaking Bad",
+        "genero": "Drama",
+        "anoLancamento": 2008,
+        "temporadas": 5
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
