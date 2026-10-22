@@ -1,24 +1,27 @@
+using ApiSeries.Data;
+using ApiSeries.Models;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 var app = builder.Build();
 
-// Criar nossa lista
-var series = new List<SerieDto>
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+app.MapGet("/api/series", async (AppDbContext db) =>
 {
-    new SerieDto(1, "Stranger Things", "Ficção científica", 2016, 4),
-    new SerieDto(2, "The Last of Us", "Drama", 2023, 2)
-};
+    var series = await db.Series.ToListAsync();
 
-
-app.MapGet("/", () => "API de séries está no ar");
-
-app.MapGet("/api/series", () =>
-{
     return Results.Ok(series);
 });
 
-app.MapGet("/api/series/{id:int}", (int id) =>
+app.MapGet("/api/series/{id:int}", async (int id, AppDbContext db) =>
 {
-    var serie = series.Find(serieDaLista => serieDaLista.Id == id);
+    var serie = await db.Series.FindAsync(id);
 
     if (serie is null)
     {
@@ -28,55 +31,68 @@ app.MapGet("/api/series/{id:int}", (int id) =>
     return Results.Ok(serie);
 });
 
-app.MapPost("/api/series", (SerieEntradaDto dados) =>
+app.MapPost("/api/series", async (SerieEntradaDto dados, AppDbContext db) =>
 {
-    int proximoId = series.Count + 1;
+    var novaSerie = new Serie
+    {
+        Titulo = dados.Titulo,
+        Genero = dados.Genero,
+        AnoLancamento = dados.AnoLancamento,
+        Temporadas = dados.Temporadas
+    };
 
-    var novaSerie = new SerieDto(
-        proximoId,
-        dados.Titulo,
-        dados.Genero,
-        dados.AnoLancamento,
-        dados.Temporadas
+    db.Series.Add(novaSerie);
+    await db.SaveChangesAsync();
+
+    var resposta = new SerieDto(
+        novaSerie.Id,
+        novaSerie.Titulo,
+        novaSerie.Genero,
+        novaSerie.AnoLancamento,
+        novaSerie.Temporadas
     );
 
-    series.Add(novaSerie);
-
-    return Results.Created($"/api/series/{novaSerie.Id}", novaSerie);
+    return Results.Created($"/api/series/{novaSerie.Id}", resposta);
 });
 
-app.MapPut("/api/series/{id:int}", (int id, SerieEntradaDto dados) =>
+app.MapPut("/api/series/{id:int}", async (int id, SerieEntradaDto dados, AppDbContext db) =>
 {
-    int indice = series.FindIndex(serieDaLista => serieDaLista.Id == id);
+    var serie = await db.Series.FindAsync(id);
 
-    if (indice == -1)
+    if (serie is null)
     {
         return Results.NotFound();
     }
 
-    var serieAtualizada = new SerieDto(
-        id,
-        dados.Titulo,
-        dados.Genero,
-        dados.AnoLancamento,
-        dados.Temporadas
+    serie.Titulo = dados.Titulo;
+    serie.Genero = dados.Genero;
+    serie.AnoLancamento = dados.AnoLancamento;
+    serie.Temporadas = dados.Temporadas;
+
+    await db.SaveChangesAsync();
+
+    var resposta = new SerieDto(
+        serie.Id,
+        serie.Titulo,
+        serie.Genero,
+        serie.AnoLancamento,
+        serie.Temporadas
     );
 
-    series[indice] = serieAtualizada;
-
-    return Results.Ok(serieAtualizada);
+    return Results.Ok(resposta);
 });
 
-app.MapDelete("/api/series/{id:int}", (int id) =>
+app.MapDelete("/api/series/{id:int}", async (int id, AppDbContext db) =>
 {
-    int indice = series.FindIndex(serieDaLista => serieDaLista.Id == id);
+    var serie = await db.Series.FindAsync(id);
 
-    if (indice == -1)
+    if (serie is null)
     {
         return Results.NotFound();
     }
 
-    series.RemoveAt(indice);
+    db.Series.Remove(serie);
+    await db.SaveChangesAsync();
 
     return Results.NoContent();
 });
