@@ -1,6 +1,7 @@
 using ApiSeries.Data;
 using ApiSeries.Models;
 using Microsoft.EntityFrameworkCore;
+using ApiSeries.Dtos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,19 +99,3 @@ app.MapDelete("/api/series/{id:int}", async (int id, AppDbContext db) =>
 });
 
 app.Run();
-
-
-record SerieDto(
-    int Id,
-    string Titulo,
-    string Genero,
-    int AnoLancamento,
-    int Temporadas
-);
-
-record SerieEntradaDto(
-    string Titulo,
-    string Genero,
-    int AnoLancamento,
-    int Temporadas
-);
