@@ -73,6 +73,26 @@ Para verificar se o projeto compila corretamente:
 dotnet build
 ```
 
+## Estrutura do projeto
+
+```text
+ApiSeries/
+├── Data/
+│   └── AppDbContext.cs
+├── Dtos/
+│   ├── SerieDto.cs
+│   └── SerieEntradaDto.cs
+├── Migrations/
+├── Models/
+│   └── Serie.cs
+├── wwwroot/
+├── bruno/
+│   └── ApiSeries/
+├── Program.cs
+├── README.md
+└── series.db
+```
+
 ## Funcionalidades do frontend
 
 A interface web permite:
@@ -143,7 +163,7 @@ Os dados são armazenados em um banco de dados SQLite, utilizando o Entity Frame
 
 O arquivo `series.db` é criado localmente na pasta do projeto após a inicialização do banco de dados.
 
-Diferentemente da versão anterior, os dados não são perdidos quando a aplicação é encerrada, pois ficam armazenados no banco de dados.
+Os dados permanecem armazenados mesmo após o encerramento da aplicação, podendo ser consultados novamente quando ela for reiniciada.
 
 As migrações do Entity Framework Core estão disponíveis na pasta `Migrations`.
 
@@ -171,7 +191,8 @@ A coleção contempla testes de:
 - POST;
 - PUT;
 - DELETE;
-- GET após exclusão, verificando o retorno 404 para uma série inexistente.
+- GET após exclusão, verificando o retorno 404 para uma série inexistente;
+- Persistência dos dados após encerrar e reiniciar a aplicação.
 
 ## Vídeo de demonstração
 
